@@ -1,59 +1,128 @@
+const fs = require('fs/promises');
+
 class ProductManager {
-  #products;
+  #path;
+  #products; // Make products a private field
 
-  constructor() {
-    this.#products = [];
+  constructor(path) {
+    this.#path = path;
+    this.#initializeFile();
   }
 
-  create(data) {
+  async #initializeFile() {
+    try {
+      await fs.access(this.#path);
+    } catch (err) {
+      // If the file does not exist, create an empty file
+      await fs.writeFile(this.#path, '[]', 'utf-8');
+    }
+  }
+
+  async addProduct(productData) {
+    await this.#readProducts(); // Ensure products are read before adding
     const newProduct = {
-      id: this.#generateId(),
-      title: data.title,
-      photo: data.photo,
-      price: data.price,
-      stock: data.stock,
+      id: this.#generateNextId(),
+      ...productData,
     };
-
     this.#products.push(newProduct);
+    await this.#writeProducts();
+    return newProduct;
   }
 
-  read() {
+  async getProducts() {
+    await this.#readProducts();
     return this.#products;
   }
 
-  readOne(id) {
-    return this.#products.find((product) => product.id === id);
+  async getProductById(id) {
+    await this.#readProducts();
+    return this.#products.find(product => product.id === id);
   }
 
-  #generateId() {
-    // Método privado para generar un ID único y auto-incrementable
-    return this.#products.length + 1;
+  async updateProduct(id, updatedProduct) {
+    await this.#readProducts();
+    const productIndex = this.#products.findIndex(product => product.id === id);
+
+    if (productIndex !== -1) {
+      this.#products[productIndex] = {
+        ...this.#products[productIndex],
+        ...updatedProduct,
+      };
+      await this.#writeProducts();
+      return this.#products[productIndex];
+    } else {
+      throw new Error('Product not found.');
+    }
+  }
+
+  async deleteProduct(id) {
+    await this.#readProducts();
+    this.#products = this.#products.filter(product => product.id !== id);
+    await this.#writeProducts();
+    return true;
+  }
+
+  async #readProducts() {
+    try {
+      const data = await fs.readFile(this.#path, 'utf-8');
+      this.#products = data ? JSON.parse(data) : [];
+    } catch (err) {
+      console.error('Error reading products:', err.message);
+      this.#products = [];
+    }
+  }
+
+  async #writeProducts() {
+    try {
+      const data = JSON.stringify(this.#products, null, 2);
+      await fs.writeFile(this.#path, data, 'utf-8');
+      console.log('Products saved successfully');
+    } catch (err) {
+      console.error('Error saving products:', err.message);
+    }
+  }
+
+  #generateNextId() {
+    const maxId = this.#products.reduce((max, product) => (product.id > max ? product.id : max), 0);
+    return maxId + 1;
   }
 }
 
-// Ejemplo de uso
-const productManager = new ProductManager();
+// Example of usage
+async function exampleAsync() {
+  const manager = new ProductManager('./productos.json');
 
-// Agregar productos
-productManager.create({
-  title: "cafe americano",
-  photo: "ruta/imagen1.jpg",
-  price: 29.99,
-  stock: 50,
-});
+  // Add product
+  const newProduct = await manager.addProduct({
+    title: 'coffee',
+    description: 'coffee description',
+    price: 19.99,
+    thumbnail: 'path/to/image.jpg',
+    code: 'ABC123',
+    stock: 50,
+  });
+  console.log('New product:', newProduct);
 
-productManager.create({
-  title: "cafe negro",
-  photo: "ruta/imagen2.jpg",
-  price: 39.99,
-  stock: 30,
-});
+  // Get all products
+  const allProducts = await manager.getProducts();
+  console.log('All products:', allProducts);
 
-// Obtener todos los productos
-const allProducts = productManager.read();
-console.log("Todos los productos:", allProducts);
+  // Get product by ID
+  const productIdToFind = 1;
+  const foundProduct = await manager.getProductById(productIdToFind);
+  console.log(`Product with ID ${productIdToFind}:`, foundProduct);
 
-// Obtener un producto por ID
-const productIdToFind = 1;
-const foundProduct = productManager.readOne(productIdToFind);
-console.log(`Producto con ID ${productIdToFind}:`, foundProduct);
+  // Update product
+  const updatedProduct = await manager.updateProduct(newProduct.id, { price: 24.99 });
+  console.log('Product updated:', updatedProduct);
+
+  // Delete product
+  //const deleteResult = await manager.deleteProduct(newProduct.id);
+  //console.log('Product deleted:', deleteResult);
+
+  // Get all products after deletion
+  //const productsAfterDelete = await manager.getProducts();
+  //console.log('Products after deletion:', productsAfterDelete);
+}
+
+exampleAsync();

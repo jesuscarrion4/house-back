@@ -1,0 +1,20 @@
+[
+  {
+    "id": 1,
+    "title": "Sample Product",
+    "description": "Sample description",
+    "price": 24.99,
+    "thumbnail": "path/to/image.jpg",
+    "code": "ABC123",
+    "stock": 50
+  },
+  {
+    "id": 2,
+    "title": "coffee",
+    "description": "coffee description",
+    "price": 24.99,
+    "thumbnail": "path/to/image.jpg",
+    "code": "ABC123",
+    "stock": 50
+  }
+]
