@@ -1,19 +1,46 @@
+const fs = require('fs').promises;
+
 class UserManager {
+  #usersFilePath;
   #users;
 
-  constructor() {
+  constructor(usersFilePath) {
+    this.#usersFilePath = usersFilePath;
     this.#users = [];
   }
 
-  create(data) {
-    const newUser = {
-      id: this.#generateId(),
-      name: data.name,
-      photo: data.photo,
-      email: data.email,
-    };
+  async init() {
+    try {
+      const data = await fs.readFile(this.#usersFilePath, 'utf-8');
+      this.#users = JSON.parse(data);
+    } catch (error) {
+      this.#users = [];
+    }
+  }
 
-    this.#users.push(newUser);
+  async saveToFile() {
+    try {
+      const dataToWrite = JSON.stringify(this.#users, null, 2);
+      await fs.writeFile(this.#usersFilePath, dataToWrite, 'utf-8');
+    } catch (error) {
+      console.error('Error al guardar en el archivo:', error.message);
+    }
+  }
+
+  async create(data) {
+    try {
+      const newUser = {
+        id: await this.#generateIdAsync(),
+        name: data.name,
+        photo: data.photo,
+        email: data.email,
+      };
+
+      this.#users.push(newUser);
+      await this.saveToFile();
+    } catch (error) {
+      console.error('Error al crear usuario:', error.message);
+    }
   }
 
   read() {
@@ -24,33 +51,40 @@ class UserManager {
     return this.#users.find((user) => user.id === id);
   }
 
-  #generateId() {
-    // Método privado para generar un ID único y auto-incrementable
-    return this.#users.length + 1;
+  async #generateIdAsync() {
+    try {
+      return this.#users.length + 1;
+    } catch (error) {
+      console.error('Error al generar ID:', error.message);
+    }
   }
 }
 
-// Ejemplo de uso
-const userManager = new UserManager();
 
-// Agregar usuarios
-userManager.create({
-  name: "jesus",
-  photo: "ruta/imagen1.jpg",
-  email: "usuario1@example.com",
-});
+const usersFilePath = 'users.json'; 
+const userManager = new UserManager(usersFilePath);
 
-userManager.create({
-  name: "maria",
-  photo: "ruta/imagen2.jpg",
-  email: "usuario2@example.com",
-});
+async function addUser() {
+  await userManager.init();
 
-// Obtener todos los usuarios
-const allUsers = userManager.read();
-console.log("Todos los usuarios:", allUsers);
+  await userManager.create({
+    name: 'jesus',
+    photo: 'ruta/imagen1.jpg',
+    email: 'usuario1@example.com',
+  });
 
-// Obtener un usuario por ID
-const userIdToFind = 1;
-const foundUser = userManager.readOne(userIdToFind);
-console.log(`Usuario con ID ${userIdToFind}:`, foundUser);
+  await userManager.create({
+    name: 'maria',
+    photo: 'ruta/imagen2.jpg',
+    email: 'usuario2@example.com',
+  });
+
+  const allUsers = userManager.read();
+  console.log('Todos los usuarios:', allUsers);
+
+  const userIdToFind = 1;
+  const foundUser = userManager.readOne(userIdToFind);
+  console.log(`Usuario con ID ${userIdToFind}:`, foundUser);
+}
+
+addUser();

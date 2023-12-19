@@ -1,0 +1,14 @@
+[
+  {
+    "id": 1,
+    "name": "jesus",
+    "photo": "ruta/imagen1.jpg",
+    "email": "usuario1@example.com"
+  },
+  {
+    "id": 2,
+    "name": "maria",
+    "photo": "ruta/imagen2.jpg",
+    "email": "usuario2@example.com"
+  }
+]

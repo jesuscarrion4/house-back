@@ -1,128 +1,126 @@
-const fs = require('fs/promises');
+const fs = require('fs').promises;
 
 class ProductManager {
-  #path;
-  #products; // Make products a private field
+  #products;
+  #filePath;
 
-  constructor(path) {
-    this.#path = path;
-    this.#initializeFile();
+  constructor(filePath) {
+    this.#products = [];
+    this.#filePath = filePath;
   }
 
-  async #initializeFile() {
+  async initialize() {
     try {
-      await fs.access(this.#path);
-    } catch (err) {
-      // If the file does not exist, create an empty file
-      await fs.writeFile(this.#path, '[]', 'utf-8');
+      const data = await fs.readFile(this.#filePath, 'utf-8');
+      this.#products = JSON.parse(data);
+    } catch (error) {
+      
+      console.error('Error al inicializar el gestor de productos:', error.message);
     }
   }
 
-  async addProduct(productData) {
-    await this.#readProducts(); // Ensure products are read before adding
-    const newProduct = {
-      id: this.#generateNextId(),
-      ...productData,
-    };
-    this.#products.push(newProduct);
-    await this.#writeProducts();
-    return newProduct;
+  async saveToFile() {
+    try {
+      await fs.writeFile(this.#filePath, JSON.stringify(this.#products, null, 2), 'utf-8');
+      console.log('Datos guardados en el archivo:', this.#filePath);
+    } catch (error) {
+      console.error('Error al guardar datos en el archivo:', error.message);
+    }
   }
 
-  async getProducts() {
-    await this.#readProducts();
+  async create(data) {
+    try {
+      
+      await this.#simulateAsyncOperation();
+
+      if (!data.title || !data.price || !data.stock) {
+        throw new Error('Los datos del producto son incompletos.');
+      }
+
+      const newProduct = {
+        id: await this.#generateId(),
+        title: data.title,
+        photo: data.photo,
+        price: data.price,
+        stock: data.stock,
+      };
+
+      this.#products.push(newProduct);
+      console.log('Producto creado exitosamente:', newProduct);
+
+      
+      await this.saveToFile();
+    } catch (error) {
+      console.error('Error al crear el producto:', error.message);
+    }
+  }
+
+  async read() {
     return this.#products;
   }
 
-  async getProductById(id) {
-    await this.#readProducts();
-    return this.#products.find(product => product.id === id);
-  }
-
-  async updateProduct(id, updatedProduct) {
-    await this.#readProducts();
-    const productIndex = this.#products.findIndex(product => product.id === id);
-
-    if (productIndex !== -1) {
-      this.#products[productIndex] = {
-        ...this.#products[productIndex],
-        ...updatedProduct,
-      };
-      await this.#writeProducts();
-      return this.#products[productIndex];
-    } else {
-      throw new Error('Product not found.');
-    }
-  }
-
-  async deleteProduct(id) {
-    await this.#readProducts();
-    this.#products = this.#products.filter(product => product.id !== id);
-    await this.#writeProducts();
-    return true;
-  }
-
-  async #readProducts() {
+  async readOne(id) {
     try {
-      const data = await fs.readFile(this.#path, 'utf-8');
-      this.#products = data ? JSON.parse(data) : [];
-    } catch (err) {
-      console.error('Error reading products:', err.message);
-      this.#products = [];
+      await this.#simulateAsyncOperation();
+
+      const foundProduct = this.#products.find((product) => product.id === id);
+
+      if (!foundProduct) {
+        console.log(`No se encontró ningún producto con ID ${id}.`);
+        return null;
+      }
+
+      console.log(`Producto con ID ${id}:`, foundProduct);
+      return foundProduct;
+    } catch (error) {
+      console.error('Error al buscar el producto:', error.message);
+      return null;
     }
   }
 
-  async #writeProducts() {
-    try {
-      const data = JSON.stringify(this.#products, null, 2);
-      await fs.writeFile(this.#path, data, 'utf-8');
-      console.log('Products saved successfully');
-    } catch (err) {
-      console.error('Error saving products:', err.message);
-    }
+  async #generateId() {
+    await this.#simulateAsyncOperation();
+    return this.#products.length + 1;
   }
 
-  #generateNextId() {
-    const maxId = this.#products.reduce((max, product) => (product.id > max ? product.id : max), 0);
-    return maxId + 1;
+  async #simulateAsyncOperation() {
+    
+    return new Promise((resolve) => {
+      setTimeout(resolve, 1000);
+    });
   }
 }
 
-// Example of usage
-async function exampleAsync() {
-  const manager = new ProductManager('./productos.json');
 
-  // Add product
-  const newProduct = await manager.addProduct({
-    title: 'coffee',
-    description: 'coffee description',
-    price: 19.99,
-    thumbnail: 'path/to/image.jpg',
-    code: 'ABC123',
+const filePath = 'productos.json';
+
+
+const productManager = new ProductManager(filePath);
+
+
+(async () => {
+  await productManager.initialize();
+
+  // Agregar productos
+  await productManager.create({
+    title: 'cafe americano',
+    photo: 'ruta/imagen1.jpg',
+    price: 29.99,
     stock: 50,
   });
-  console.log('New product:', newProduct);
 
-  // Get all products
-  const allProducts = await manager.getProducts();
-  console.log('All products:', allProducts);
+  await productManager.create({
+    title: 'cafe negro',
+    photo: 'ruta/imagen2.jpg',
+    price: 39.99,
+    stock: 30,
+  });
 
-  // Get product by ID
+
+  const allProducts = await productManager.read();
+  console.log('Todos los productos:', allProducts);
+
+  
   const productIdToFind = 1;
-  const foundProduct = await manager.getProductById(productIdToFind);
-  console.log(`Product with ID ${productIdToFind}:`, foundProduct);
-
-  // Update product
-  const updatedProduct = await manager.updateProduct(newProduct.id, { price: 24.99 });
-  console.log('Product updated:', updatedProduct);
-
-  // Delete product
-  //const deleteResult = await manager.deleteProduct(newProduct.id);
-  //console.log('Product deleted:', deleteResult);
-
-  // Get all products after deletion
-  //const productsAfterDelete = await manager.getProducts();
-  //console.log('Products after deletion:', productsAfterDelete);
-}
-
-exampleAsync();
+  await productManager.readOne(productIdToFind);
+})();

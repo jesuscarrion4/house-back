@@ -1,20 +1,16 @@
 [
   {
     "id": 1,
-    "title": "Sample Product",
-    "description": "Sample description",
-    "price": 24.99,
-    "thumbnail": "path/to/image.jpg",
-    "code": "ABC123",
+    "title": "cafe americano",
+    "photo": "ruta/imagen1.jpg",
+    "price": 29.99,
     "stock": 50
   },
   {
     "id": 2,
-    "title": "coffee",
-    "description": "coffee description",
-    "price": 24.99,
-    "thumbnail": "path/to/image.jpg",
-    "code": "ABC123",
-    "stock": 50
+    "title": "cafe negro",
+    "photo": "ruta/imagen2.jpg",
+    "price": 39.99,
+    "stock": 30
   }
 ]
