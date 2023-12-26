@@ -12,5 +12,19 @@
     "photo": "ruta/imagen2.jpg",
     "price": 39.99,
     "stock": 30
+  },
+  {
+    "id": 3,
+    "title": "cafe americano",
+    "photo": "ruta/imagen1.jpg",
+    "price": 29.99,
+    "stock": 50
+  },
+  {
+    "id": 4,
+    "title": "cafe negro",
+    "photo": "ruta/imagen2.jpg",
+    "price": 39.99,
+    "stock": 30
   }
 ]
