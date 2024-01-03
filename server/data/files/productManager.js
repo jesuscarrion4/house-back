@@ -1,4 +1,6 @@
-const fs = require('fs').promises;
+import { promises as fs } from 'fs';
+import { createHash } from 'crypto';
+import path from 'path'; 
 
 class ProductManager {
   #products;
@@ -11,10 +13,10 @@ class ProductManager {
 
   async initialize() {
     try {
+      await fs.mkdir(path.dirname(this.#filePath), { recursive: true });
       const data = await fs.readFile(this.#filePath, 'utf-8');
       this.#products = JSON.parse(data);
     } catch (error) {
-      
       console.error('Error al inicializar el gestor de productos:', error.message);
     }
   }
@@ -30,7 +32,6 @@ class ProductManager {
 
   async create(data) {
     try {
-      
       await this.#simulateAsyncOperation();
 
       if (!data.title || !data.price || !data.stock) {
@@ -48,7 +49,6 @@ class ProductManager {
       this.#products.push(newProduct);
       console.log('Producto creado exitosamente:', newProduct);
 
-      
       await this.saveToFile();
     } catch (error) {
       console.error('Error al crear el producto:', error.message);
@@ -78,25 +78,45 @@ class ProductManager {
     }
   }
 
+  async destroy(id) {
+    try {
+      await this.#simulateAsyncOperation();
+      const indexToRemove = this.#products.findIndex((product) => product.id === id);
+  
+      if (indexToRemove === -1) {
+        console.log(`No se encontró ningún producto con ID ${id}. No se eliminó nada.`);
+        return;
+      }
+  
+      const removedProduct = this.#products.splice(indexToRemove, 1)[0];
+      console.log(`Producto eliminado con éxito:`, removedProduct);
+  
+      await this.saveToFile();
+    } catch (error) {
+      console.error('Error al eliminar el producto:', error.message);
+    }
+  }
+  
+
   async #generateId() {
-    await this.#simulateAsyncOperation();
-    return this.#products.length + 1;
+    try {
+      const hash = createHash('sha256');
+      hash.update(Date.now().toString());
+      return hash.digest('hex').slice(0, 8); // Utiliza los primeros 8 caracteres para el ID
+    } catch (error) {
+      console.error('Error al generar ID:', error.message);
+    }
   }
 
   async #simulateAsyncOperation() {
-    
     return new Promise((resolve) => {
       setTimeout(resolve, 1000);
     });
   }
 }
 
-
 const filePath = 'productos.json';
-
-
 const productManager = new ProductManager(filePath);
-
 
 (async () => {
   await productManager.initialize();
@@ -116,11 +136,16 @@ const productManager = new ProductManager(filePath);
     stock: 30,
   });
 
-
   const allProducts = await productManager.read();
   console.log('Todos los productos:', allProducts);
 
-  
   const productIdToFind = 1;
   await productManager.readOne(productIdToFind);
+
+  // Eliminar un producto por ID
+  const productIdToDelete = 1;
+  await productManager.destroy(productIdToDelete);
 })();
+
+
+export default productManager;

@@ -54,3 +54,4 @@ console.log("Todos los usuarios:", allUsers);
 const userIdToFind = 1;
 const foundUser = userManager.readOne(userIdToFind);
 console.log(`Usuario con ID ${userIdToFind}:`, foundUser);
+
