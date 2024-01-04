@@ -10,5 +10,17 @@
     "name": "maria",
     "photo": "ruta/imagen2.jpg",
     "email": "usuario2@example.com"
+  },
+  {
+    "id": "2d2006f5",
+    "name": "jesus",
+    "photo": "ruta/imagen1.jpg",
+    "email": "usuario1@example.com"
+  },
+  {
+    "id": "57f2d659",
+    "name": "maria",
+    "photo": "ruta/imagen2.jpg",
+    "email": "usuario2@example.com"
   }
 ]
