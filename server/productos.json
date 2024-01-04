@@ -1,0 +1,30 @@
+[
+  {
+    "id": "5324952d",
+    "title": "cafe americano",
+    "photo": "ruta/imagen1.jpg",
+    "price": 29.99,
+    "stock": 50
+  },
+  {
+    "id": "c03d9cf0",
+    "title": "cafe negro",
+    "photo": "ruta/imagen2.jpg",
+    "price": 39.99,
+    "stock": 30
+  },
+  {
+    "id": "a6c12a21",
+    "title": "cafe americano",
+    "photo": "ruta/imagen1.jpg",
+    "price": 29.99,
+    "stock": 50
+  },
+  {
+    "id": "8dc0af43",
+    "title": "cafe negro",
+    "photo": "ruta/imagen2.jpg",
+    "price": 39.99,
+    "stock": 30
+  }
+]
