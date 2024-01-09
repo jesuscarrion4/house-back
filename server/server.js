@@ -1,113 +1,29 @@
 import express from "express";
-import userManager from "./data/files/userManager.js";
-import productManager from "./data/files/productManager.js";
+import morgan from "morgan";
+import { engine } from "express-handlebars";
+
+import router from "./src/routers/index.router.js";
+import errorHandler from "./src/middlewares/errorHandler.mid.js";
+import pathHandler from "./src/middlewares/pathHandler.mid.js";
+import __dirname from "./utils.js";
 
 const server = express();
-const port = 3000;
+const PORT = 8080;
+const ready = () => console.log("server ready on port " + PORT);
+server.listen(PORT, ready);
 
+//templates
+server.engine("handlebars",engine())
+server.set("view engine", "handlebars")
+server.set("views", __dirname+"/src/views")
+
+//middlewares
 server.use(express.json());
 server.use(express.urlencoded({ extended: true }));
+server.use(express.static(__dirname + "/public"));
+server.use(morgan("dev"));
 
-const ready = () => "server ready on port" + port;
-server.listen(port, ready);
-
-// usuarios
-server.get("/api/users", async (req, res) => {
-  try {
-    const all = await userManager.read();
-
-    if (all.length === 0) {
-      // throw new Error("Not found users");
-
-      return res.json({
-        statuscode: 404,
-        message: error.message,
-      });
-    }
-    console.log(all);
-    return res.json({
-      statuscode: 200,
-      Response: all,
-    });
-  } catch (error) {
-    console.log(error);
-    return res.json({
-      statuscode: 500,
-      message: error.message,
-    });
-  }
-});
-
-server.get("/api/users/:uid", async (req, res) => {
-  try {
-    const { uid } = req.params;
-    const one = await userManager.readOne(uid);
-    if (!one) {
-      return res.json({
-        statuscode: 404,
-        message: "user not found",
-      });
-    }
-    console.log(one);
-
-    return res.json({
-      statuscode: 200,
-      Response: one,
-    });
-  } catch (error) {
-    console.log(error);
-    return res.json({
-      statuscode: 500,
-      message: error.message,
-    });
-  }
-});
-
-// product
-server.get("/api/products", async (req, res) => {
-  try {
-    const all = await productManager.read();
-
-    if (all.length === 0) {
-      return res.json({
-        statuscode: 404,
-        message: "Products not found",
-      });
-    }
-    return res.json({
-      statuscode: 200,
-      response: all,
-    });
-  } catch (error) {
-    console.log(error);
-    return res.json({
-      statuscode: 500,
-      message: error.message,
-    });
-  }
-});
-
-server.get("/api/products/:pid", async (req, res) => {
-  try {
-    const { pid } = req.params;
-    const one = await productManager.readOne(pid);
-
-    if (!one) {
-      return res.json({
-        statuscode: 404,
-        message: "Product not found",
-      });
-    } else {
-      return res.json({
-        statuscode: 200,
-        response: one,
-      });
-    }
-  } catch (error) {
-    console.log(error);
-    return res.json({
-      statuscode: 500,
-      message: error.message,
-    });
-  }
-});
+//routers
+server.use("/", router);
+server.use(errorHandler);
+server.use(pathHandler);
