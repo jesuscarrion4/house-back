@@ -76,7 +76,7 @@ class OrdenManager {
 
 // Ejemplo de uso
 async function ejemploUso() {
-  const filename = 'ordenes.json'; // Nombre del archivo donde se guardarán las órdenes
+  const filename = './src/data/fs/files/ordenes.json'; // Nombre del archivo donde se guardarán las órdenes
   const ordenManager = new OrdenManager(filename);
 
   try {
@@ -101,3 +101,5 @@ async function ejemploUso() {
 }
 
 ejemploUso();
+
+export default ordenManager;

@@ -1,45 +1,46 @@
-import express from "express";
-import ordenes from "./data/files/ordenManager.js";
-const server = express();
-const port = 8080;
-
-server.use(express.json());
-server.use(express.urlencoded({ extended: true }));
-
-const ready = () => `Server ready on port ${port}`;
-server.listen(port, ready);
+import { Router } from "express";
+//import ordenesManager from "../../src/data/fs/ordenesManager.js";
+import userManager from "../../src/data/fs/userManager.js";
+const ordenesRouter = Router();
 
 
-const filename = 'ordenes.json';
-const ordenManager = new OrdenManager(filename);
-
-server.use(express.json());
 
 // Endpoint para crear una nueva orden
-server.post('/api/orders', (req, res) => {
+ordenesRouter.post('/api/orders', async (req, res) => {
   try {
-    const nuevaOrden = ordenManager.create(req.body);
-    res.json(nuevaOrden);
+    const orderData = req.body;
+    const newOrder = await userManager.create(orderData);
+    res.json({ message: 'Orden creada con éxito', order: newOrder });
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    res.status(500).json({ error: 'Error al crear la orden', message: error.message });
   }
 });
 
-// Endpoint para obtener una orden por UID
-server.get('/api/orders/:uid', (req, res) => {
-  const uid = req.params.uid;
-  const orden = ordenManager.ordenes.filter((orden) => orden.uid === uid);
-  res.json(orden);
+// Endpoint para obtener una orden por ID
+ordenesRouter.get('/api/orders/:id', async (req, res) => {
+  try {
+    const orderId = req.params.id;
+    const order = await userManager.read(orderId);
+
+    if (order) {
+      res.json(order);
+    } else {
+      res.status(404).json({ error: `No se encontró ninguna orden con ID ${orderId}` });
+    }
+  } catch (error) {
+    res.status(500).json({ error: 'Error al obtener la orden', message: error.message });
+  }
 });
 
-// Endpoint para eliminar una orden por OID
-server.delete('/api/orders/:oid', (req, res) => {
-  const oid = req.params.oid;
-  ordenManager.destroy(oid);
-  res.json({ message: 'Orden eliminada correctamente' });
+// Endpoint para eliminar una orden por ID
+ordenesRouter.delete('/api/orders/:id', async (req, res) => {
+  try {
+    const orderId = req.params.id;
+    await userManager.destroy(orderId);
+    res.json({ message: `Orden con ID ${orderId} eliminada con éxito` });
+  } catch (error) {
+    res.status(500).json({ error: 'Error al eliminar la orden', message: error.message });
+  }
 });
 
-// Inicia el servidor
-server.listen(port, () => {
-  console.log(`Servidor escuchando en http://localhost:${port}`);
-});
+export default ordenesRouter;

@@ -116,7 +116,7 @@ class UserManager {
   }
 }
 
-const usersFilePath = 'users.json';
+const usersFilePath = './src/data/fs/files/users.json';
 const userManager = new UserManager(usersFilePath);
 
 async function addUser() {

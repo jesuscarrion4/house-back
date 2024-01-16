@@ -1,18 +1,11 @@
-import express from "express";
-import userManager from "./data/files/userManager.js";
+import { Router } from "express";
+import userManager from "../../src/data/fs/userManager.js";
 
 
-const server = express();
-const port = 8080;
-
-server.use(express.json());
-server.use(express.urlencoded({ extended: true }));
-
-const ready = () => "server ready on port" + port;
-server.listen(port, ready);
+const usersRouter = Router();
 
 
-server.post("/api/users", async (req, res) => {
+usersRouter.post("/api/users", async (req, res) => {
     try {
       const userData = req.body;
       const createdUser = await userManager.create(userData);
@@ -29,22 +22,25 @@ server.post("/api/users", async (req, res) => {
     }
   });
   
-  server.get("/api/users", async (req, res) => {
+  usersRouter.get("/api/users", async (req, res) => {
     try {
       const all = await userManager.read();
   
       if (all.length === 0) {
+        // throw new Error("Not found users");
+  
         return res.json({
           statuscode: 404,
-          message: "Not found users",
+          message: error.message,
         });
       }
-  
+      console.log(all);
       return res.json({
         statuscode: 200,
         Response: all,
       });
     } catch (error) {
+      console.log(error);
       return res.json({
         statuscode: 500,
         message: error.message,
@@ -52,26 +48,28 @@ server.post("/api/users", async (req, res) => {
     }
   });
   
-  server.get("/api/users/:uid", async (req, res) => {
+  usersRouter.get("/api/users/:uid", async (req, res) => {
     try {
       const { uid } = req.params;
       const one = await userManager.readOne(uid);
-  
       if (!one) {
         return res.json({
           statuscode: 404,
-          message: "User not found",
+          message: "user not found",
         });
       }
+      console.log(one);
   
       return res.json({
         statuscode: 200,
         Response: one,
       });
     } catch (error) {
+      console.log(error);
       return res.json({
         statuscode: 500,
         message: error.message,
       });
     }
   });
+  export default usersRouter;
