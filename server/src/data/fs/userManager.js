@@ -157,5 +157,4 @@ async function addUser() {
 }
 
 addUser();
-
 export default userManager;

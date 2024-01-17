@@ -101,5 +101,4 @@ async function ejemploUso() {
 }
 
 ejemploUso();
-
 export default ordenManager;
